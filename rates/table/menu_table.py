@@ -24,7 +24,7 @@ class MenuTable:
     def __init__(self, cfg):
         self.cfg = MenuConfig(cfg)
         self.version = self.cfg.version
-        self.fname = self.cfg.sample
+        self.fname = glob(self.cfg.sample)
         self.table_outdir = self.cfg.table_outdir
         self.table_fname = self.cfg.table_fname
         self.cfg_fname = self.cfg.menu_cfg
@@ -37,11 +37,11 @@ class MenuTable:
             Function to load the minbias sample to be used for the rates computation.
             The name of the file is specified in the config used for the MenuTable init.
         '''
-        with uproot.open(self.fname) as f:
-            arr = f["l1PhaseIITree/L1PhaseIITree"].arrays(
-                filter_name = f"{obj}*", 
-                how = "zip"
-                ) 
+        for fname in self.fname:
+            with uproot.open(self.fname) as f:
+                temp_name = f"{obj}*" 
+        in_files = {fname:"l1PhaseIITree/L1PhaseIITree" for fname in self.fname} 
+        arr = uproot.concatenate(in_files, filter_name = temp_name, how = "zip")
         return arr
 
     def get_scalings(self, scalings):
